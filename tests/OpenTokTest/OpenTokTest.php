@@ -1143,10 +1143,124 @@ class OpenTokTest extends TestCase
 
         $connectionId = '063e72a4-64b4-43c8-9da5-eca071daab89';
 
-        $this->expectException('OpenTok\Exception\ForceDisconnectConnectionException');        
+        $this->expectException('OpenTok\Exception\ForceDisconnectConnectionException');
 
         // Act
         $this->opentok->forceDisconnect($sessionId, $connectionId);
+
+    }
+
+    public function testForceMute()
+    {
+        // Arrange
+        $this->setupOTWithMocks([[
+            'code' => 204
+        ]]);
+
+        $sessionId = '1_MX4xMjM0NTY3OH4-VGh1IEZlYiAyNyAwNDozODozMSBQU1QgMjAxNH4wLjI0NDgyMjI';
+
+        $streamId = '063e72a4-64b4-43c8-9da5-eca071daab89';
+
+        // Act
+        $success = $this->opentok->forceMute($sessionId, $streamId);
+
+        // Assert
+        $this->assertCount(1, $this->historyContainer);
+
+        $request = $this->historyContainer[0]['request'];
+        $this->assertEquals('POST', strtoupper($request->getMethod()));
+        $this->assertEquals('/v2/project/'.$this->API_KEY.'/session/'.$sessionId.'/stream/'.$streamId.'/mute', $request->getUri()->getPath());
+        $this->assertEquals('api.opentok.com', $request->getUri()->getHost());
+        $this->assertEquals('https', $request->getUri()->getScheme());
+
+        $contentType = $request->getHeaderLine('Content-Type');
+        $this->assertNotEmpty($contentType);
+        $this->assertEquals('application/json', $contentType);
+
+        $authString = $request->getHeaderLine('X-OPENTOK-AUTH');
+        $this->assertEquals(true, TestHelpers::validateOpenTokAuthHeader($this->API_KEY, $this->API_SECRET, $authString));
+
+        // TODO: test the dynamically built User Agent string
+        $userAgent = $request->getHeaderLine('User-Agent');
+        $this->assertNotEmpty($userAgent);
+        $this->assertStringStartsWith('OpenTok-PHP-SDK/4.5.0', $userAgent);
+
+        $this->assertTrue($success);
+    }
+
+
+    public function testForceMuteConnectionException()
+    {
+        // Arrange
+        $this->setupOTWithMocks([[
+            'code' => 404
+        ]]);
+
+        $sessionId = '1_MX4xMjM0NTY3OH4-VGh1IEZlYiAyNyAwNDozODozMSBQU1QgMjAxNH4wLjI0NDgyMjI';
+
+        $streamId = '063e72a4-64b4-43c8-9da5-eca071daab89';
+
+        $this->expectException('OpenTok\Exception\ForceMuteConnectionException');
+
+        // Act
+        $this->opentok->forceMute($sessionId, $streamId);
+
+    }
+
+    public function testForceMuteAll()
+    {
+        // Arrange
+        $this->setupOTWithMocks([[
+            'code' => 204
+        ]]);
+
+        $sessionId = '1_MX4xMjM0NTY3OH4-VGh1IEZlYiAyNyAwNDozODozMSBQU1QgMjAxNH4wLjI0NDgyMjI';
+
+        $excludeStreamId = '063e72a4-64b4-43c8-9da5-eca071daab89';
+
+        // Act
+        $success = $this->opentok->forceMuteAll($sessionId, [$excludeStreamId]);
+
+        // Assert
+        $this->assertCount(1, $this->historyContainer);
+
+        $request = $this->historyContainer[0]['request'];
+        $this->assertEquals('POST', strtoupper($request->getMethod()));
+        $this->assertEquals('/v2/project/'.$this->API_KEY.'/session/'.$sessionId.'/mute', $request->getUri()->getPath());
+        $this->assertEquals('api.opentok.com', $request->getUri()->getHost());
+        $this->assertEquals('https', $request->getUri()->getScheme());
+
+        $contentType = $request->getHeaderLine('Content-Type');
+        $this->assertNotEmpty($contentType);
+        $this->assertEquals('application/json', $contentType);
+
+        $authString = $request->getHeaderLine('X-OPENTOK-AUTH');
+        $this->assertEquals(true, TestHelpers::validateOpenTokAuthHeader($this->API_KEY, $this->API_SECRET, $authString));
+
+        // TODO: test the dynamically built User Agent string
+        $userAgent = $request->getHeaderLine('User-Agent');
+        $this->assertNotEmpty($userAgent);
+        $this->assertStringStartsWith('OpenTok-PHP-SDK/4.5.0', $userAgent);
+
+        $this->assertTrue($success);
+    }
+
+
+    public function testForceMuteConnectionExceptionAll()
+    {
+        // Arrange
+        $this->setupOTWithMocks([[
+            'code' => 404
+        ]]);
+
+        $sessionId = '1_MX4xMjM0NTY3OH4-VGh1IEZlYiAyNyAwNDozODozMSBQU1QgMjAxNH4wLjI0NDgyMjI';
+
+        $excludeStreamId = '063e72a4-64b4-43c8-9da5-eca071daab89';
+
+        $this->expectException('OpenTok\Exception\ForceMuteConnectionException');
+
+        // Act
+        $this->opentok->forceMuteAll($sessionId, [$excludeStreamId]);
 
     }
 

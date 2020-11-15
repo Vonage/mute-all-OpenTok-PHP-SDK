@@ -480,6 +480,40 @@ class OpenTok
     }
 
     /**
+     * Mute a specific stream in an OpenTok session.
+     *
+     * @param string $sessionId The OpenTok session ID that the client is connected to.
+     *
+     * @param string $streamId The Stream ID to mute in the session.
+     */
+
+    public function forceMute($sessionId, $streamId)
+    {
+        Validators::validateSessionIdBelongsToKey($sessionId, $this->apiKey);
+        Validators::validateStreamId($streamId);
+
+        return $this->client->forceMute($sessionId, $streamId);
+    }
+
+    /**
+     * Mute a all streams in an OpenTok session.
+     *
+     * @param string $sessionId The OpenTok session ID that the client is connected to.
+     *
+     * @param Array $excludedStreamIds (Optional) the stream Ids in the session to exclude from muting.
+     */
+
+    public function forceMuteAll($sessionId, $excludedStreamIds)
+    {
+        Validators::validateSessionIdBelongsToKey($sessionId, $this->apiKey);
+        foreach ($excludedStreamIds as $streamId) {
+            Validators::validateStreamId($streamId);
+        }
+
+        return $this->client->forceMute($sessionId, null, $excludedStreamIds);
+    }
+
+    /**
      * Starts a live streaming broadcast of an OpenTok session.
      *
      * @param String $sessionId The session ID of the session to be broadcast.

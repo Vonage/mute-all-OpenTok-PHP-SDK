@@ -21,7 +21,7 @@ abstract class Role extends BasicEnum
     const PUBLISHER = 'publisher';
     /**
     * In addition to the privileges granted to a publisher, in clients using the OpenTok.js
-    * library, a moderator can call the forceUnpublish() and forceDisconnect() methods of
+    * library, a moderator can call the forceUnpublish(), forceMute() and forceDisconnect() methods of
     * the Session object.
     */
     const MODERATOR = 'moderator';
