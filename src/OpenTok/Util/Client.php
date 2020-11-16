@@ -27,6 +27,9 @@ use OpenTok\Exception\SignalAuthenticationException;
 use OpenTok\Exception\ForceDisconnectConnectionException;
 use OpenTok\Exception\ForceDisconnectUnexpectedValueException;
 use OpenTok\Exception\ForceDisconnectAuthenticationException;
+use OpenTok\Exception\ForceMuteConnectionException;
+use OpenTok\Exception\ForceMuteUnexpectedValueException;
+use OpenTok\Exception\ForceMuteAuthenticationException;
 use OpenTok\MediaMode;
 
 use function GuzzleHttp\default_user_agent;
@@ -241,6 +244,36 @@ class Client
             }
         } catch (\Exception $e) {
             $this->handleForceDisconnectException($e);
+            return false;
+        }
+        return true;
+    }
+
+    public function forceMute($sessionId, $streamId, $excludedStreamIds = null)
+    {
+        $uri = is_null($streamId) || empty($streamId) ?
+            '/v2/project/' . $this->apiKey . '/session/' . $sessionId . '/mute'
+            : '/v2/project/' . $this->apiKey . '/session/' . $sessionId . '/stream/' . $streamId . '/mute';
+
+        $request = new Request('POST', $uri, ['Content-Type' => 'application/json']);
+
+        $options = [
+            'debug' => $this->isDebug()
+        ];
+
+        if ($excludedStreamIds) {
+            $options['json'] = [
+                'excluded' => $excludedStreamIds
+            ];
+        }
+
+        try {
+            $response = $this->client->send($request, $options);
+            if ($response->getStatusCode() != 204) {
+                json_decode($response->getBody(), true);
+            }
+        } catch (\Exception $e) {
+            $this->handleForceMuteException($e);
             return false;
         }
         return true;
@@ -643,6 +676,23 @@ class Client
             case 404:
                 $message = 'The client specified by the connectionId property is not connected to the session.';
                 throw new ForceDisconnectConnectionException($message, $responseCode);
+            default:
+                break;
+        }
+    }
+
+    private function handleForceMuteException($e)
+    {
+        $responseCode = $e->getResponse()->getStatusCode();
+        switch ($responseCode) {
+            case 400:
+                $message = 'One of the arguments — sessionId or streamId — is invalid.';
+                throw new ForceMuteUnexpectedValueException($message, $responseCode);
+            case 403:
+                throw new ForceMuteAuthenticationException($this->apiKey, $this->apiSecret, null, $e);
+            case 404:
+                $message = 'The client specified by the streamId property is not connected to the session.';
+                throw new ForceMuteConnectionException($message, $responseCode);
             default:
                 break;
         }
