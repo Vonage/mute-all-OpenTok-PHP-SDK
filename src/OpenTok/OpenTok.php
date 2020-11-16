@@ -496,7 +496,7 @@ class OpenTok
     }
 
     /**
-     * Mute a all streams in an OpenTok session.
+     * Mute all streams in an OpenTok session.
      *
      * @param string $sessionId The OpenTok session ID that the client is connected to.
      *
